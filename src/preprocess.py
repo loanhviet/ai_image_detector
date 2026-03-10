@@ -49,3 +49,63 @@ def process_image(src_path, dst_path, img_size=256, min_size=64):
 
     except Exception as e:
         return False, str(e)
+
+
+def process_image_multicrop(src_path, dst_dir, img_size=256, min_size=64):
+    """
+    Xử lý 1 ảnh và tạo 5 crops (center, top-left, top-right, bottom-left, bottom-right).
+
+    Mỗi crop được chuyển sang YCrCb và lưu thành file PNG riêng trong dst_dir:
+      center.png, tl.png, tr.png, bl.png, br.png
+
+    Returns:
+        (success: bool, reason: str)
+    """
+    try:
+        pil_img = Image.open(src_path)
+        pil_img = ImageOps.exif_transpose(pil_img)
+        pil_img = pil_img.convert("RGB")
+        img_rgb = np.array(pil_img)
+
+        h, w = img_rgb.shape[:2]
+        if h < min_size or w < min_size:
+            return False, "quá nhỏ"
+
+        if h < img_size or w < img_size:
+            return False, f"nhỏ hơn {img_size}"
+
+        img_bgr = cv2.cvtColor(img_rgb, cv2.COLOR_RGB2BGR)
+        img_ycrcb = cv2.cvtColor(img_bgr, cv2.COLOR_BGR2YCrCb)
+
+        cy, cx = h // 2, w // 2
+        half = img_size // 2
+
+        crops = {
+            "center": img_ycrcb[cy - half:cy + half, cx - half:cx + half],
+            "tl": img_ycrcb[0:img_size, 0:img_size],
+            "tr": img_ycrcb[0:img_size, w - img_size:w],
+            "bl": img_ycrcb[h - img_size:h, 0:img_size],
+            "br": img_ycrcb[h - img_size:h, w - img_size:w],
+        }
+
+        os.makedirs(dst_dir, exist_ok=True)
+        for name, crop in crops.items():
+            cv2.imwrite(os.path.join(dst_dir, f"{name}.png"), crop)
+
+        return True, "ok"
+
+    except Exception as e:
+        return False, str(e)
+
+
+def load_image_ycrcb(path):
+    """
+    Đọc file PNG YCrCb đã lưu từ disk.
+
+    Returns:
+        numpy array shape (H, W, 3) dtype uint8
+    """
+    img = cv2.imread(path, cv2.IMREAD_COLOR)
+    if img is None:
+        raise ValueError(f"Không thể đọc ảnh: {path}")
+    return img
