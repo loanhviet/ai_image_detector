@@ -1,9 +1,9 @@
 metric,value
-X_train_rows,69060
+X_train_rows,68681
 X_train_features,57
-X_test_rows,17266
+X_test_rows,17176
 X_test_features,57
-y_train_positive,35200
-y_train_negative,33860
-y_test_positive,8800
-y_test_negative,8466
+y_train_positive,35070
+y_train_negative,33611
+y_test_positive,8770
+y_test_negative,8406
