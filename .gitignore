@@ -18,3 +18,11 @@ __pycache__/
 # Env
 .env
 venv/
+
+# Docs artifacts (keep markdown docs tracked)
+docs/*.pdf
+docs/*.doc
+docs/*.docx
+docs/*.ppt
+docs/*.pptx
+docs/~$*
